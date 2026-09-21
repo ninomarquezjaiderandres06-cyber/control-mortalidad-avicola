@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Registro de mortalidad · Control de Mortalidad Avícola</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <nav class="sidebar" aria-label="Navegación principal">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">CM</div>
+      <strong>Mortalidad<br />Avícola</strong>
+    </div>
+
+    <ul class="nav-list">
+      <li><a href="galpones.html">
+        <span class="ico" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9"/></svg>
+        </span>
+        Galpones
+      </a></li>
+      <li><a href="reportes.html">
+        <span class="ico" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5"/><path d="M4 19h16"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="8" width="3" height="9"/><rect x="17" y="13" width="3" height="4"/></svg>
+        </span>
+        Reportes
+      </a></li>
+    </ul>
+
+    <div class="sidebar-foot">
+      <div class="user-row">
+        <div class="avatar" id="user-avatar" aria-hidden="true">U</div>
+        <span id="user-name">Usuario</span>
+      </div>
+      <a href="#" id="logout-link">Cerrar sesión</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="page-head">
+      <div>
+        <p class="eyebrow">Registro diario</p>
+        <h1 id="pen-title">Registro de mortalidad</h1>
+        <p id="pen-sub">Completa la novedad del día para este galpón.</p>
+      </div>
+      <a href="galpones.html" class="btn btn-ghost">Volver a galpones</a>
+    </div>
+
+    <form id="record-form" class="form-card" novalidate>
+      <div class="field">
+        <label for="fecha">Fecha</label>
+        <input type="date" id="fecha" name="fecha" required />
+      </div>
+
+      <div class="mortality-field" id="mortality-field">
+        <label for="cantidad">Cantidad de pollos muertos</label>
+        <div class="count-row">
+          <button type="button" class="stepper-btn" id="btn-minus" aria-label="Restar uno">−</button>
+          <input type="number" id="cantidad" name="cantidad" min="0" step="1" value="0" inputmode="numeric" required />
+          <button type="button" class="stepper-btn" id="btn-plus" aria-label="Sumar uno">+</button>
+        </div>
+        <p class="hint">Registra el conteo total de aves muertas encontradas hoy en este galpón.</p>
+        <span class="error-msg" id="cantidad-error" hidden>Ingresa un valor de 0 o mayor.</span>
+      </div>
+
+      <div class="field">
+        <label for="observaciones">Observaciones <span style="font-weight:400; color:var(--color-muted);">(opcional)</span></label>
+        <textarea id="observaciones" name="observaciones" placeholder="Ej: posible foco de enfermedad en el sector norte del galpón..."></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Guardar registro</button>
+        <a href="galpones.html" class="btn btn-ghost">Cancelar</a>
+      </div>
+    </form>
+  </main>
+</div>
+
+<div class="toast" id="toast">Registro guardado correctamente</div>
+
+<script src="assets/js/app.js"></script>
+<script>
+  requireSession();
+
+  document.getElementById("user-name").textContent = sessionStorage.getItem("mortalidad_user") || "Usuario";
+  document.getElementById("user-avatar").textContent = currentUserInitial();
+
+  document.getElementById("logout-link").addEventListener("click", function (e) {
+    e.preventDefault();
+    sessionStorage.removeItem("mortalidad_user");
+    window.location.href = "index.html";
+  });
+
+  const params = new URLSearchParams(window.location.search);
+  const penId = parseInt(params.get("galpon"), 10) || 1;
+  const pen = PENS.find((p) => p.id === penId) || PENS[0];
+
+  document.getElementById("pen-title").textContent = `Registro de mortalidad — ${pen.name}`;
+  document.getElementById("pen-sub").textContent = `${pen.capacity.toLocaleString("es-CO")} aves · reporte diario`;
+  document.getElementById("fecha").value = todayISO();
+
+  const cantidadInput = document.getElementById("cantidad");
+  document.getElementById("btn-plus").addEventListener("click", () => {
+    cantidadInput.value = (parseInt(cantidadInput.value, 10) || 0) + 1;
+  });
+  document.getElementById("btn-minus").addEventListener("click", () => {
+    cantidadInput.value = Math.max(0, (parseInt(cantidadInput.value, 10) || 0) - 1);
+  });
+
+  document.getElementById("record-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const cantidad = parseInt(cantidadInput.value, 10);
+    const field = document.getElementById("mortality-field");
+    const error = document.getElementById("cantidad-error");
+
+    if (isNaN(cantidad) || cantidad < 0) {
+      field.classList.add("field-error");
+      error.hidden = false;
+      return;
+    }
+    field.classList.remove("field-error");
+    error.hidden = true;
+
+    saveRecord({
+      penId: pen.id,
+      penName: pen.name,
+      date: document.getElementById("fecha").value,
+      count: cantidad,
+      notes: document.getElementById("observaciones").value.trim(),
+      registeredBy: sessionStorage.getItem("mortalidad_user") || "usuario",
+      timestamp: new Date().toISOString(),
+    });
+
+    const toast = document.getElementById("toast");
+    toast.classList.add("show");
+
+    setTimeout(() => {
+      window.location.href = "reportes.html";
+    }, 900);
+  });
+</script>
+</body>
+</html>

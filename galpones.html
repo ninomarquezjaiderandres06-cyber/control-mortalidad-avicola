@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Galpones · Control de Mortalidad Avícola</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <nav class="sidebar" aria-label="Navegación principal">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">CM</div>
+      <strong>Mortalidad<br />Avícola</strong>
+    </div>
+
+    <ul class="nav-list">
+      <li><a href="galpones.html" class="active">
+        <span class="ico" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9"/></svg>
+        </span>
+        Galpones
+      </a></li>
+      <li><a href="reportes.html">
+        <span class="ico" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5"/><path d="M4 19h16"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="8" width="3" height="9"/><rect x="17" y="13" width="3" height="4"/></svg>
+        </span>
+        Reportes
+      </a></li>
+    </ul>
+
+    <div class="sidebar-foot">
+      <div class="user-row">
+        <div class="avatar" id="user-avatar" aria-hidden="true">U</div>
+        <span id="user-name">Usuario</span>
+      </div>
+      <a href="#" id="logout-link">Cerrar sesión</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="page-head">
+      <div>
+        <p class="eyebrow">Panel principal</p>
+        <h1>Selecciona un galpón</h1>
+        <p>Elige el galpón para registrar la mortalidad de hoy, 8 galpones · 28.000 aves cada uno.</p>
+      </div>
+    </div>
+
+    <div class="pen-grid" id="pen-grid" role="list"></div>
+  </main>
+</div>
+
+<script src="assets/js/app.js"></script>
+<script>
+  requireSession();
+
+  document.getElementById("user-name").textContent = sessionStorage.getItem("mortalidad_user") || "Usuario";
+  document.getElementById("user-avatar").textContent = currentUserInitial();
+
+  document.getElementById("logout-link").addEventListener("click", function (e) {
+    e.preventDefault();
+    sessionStorage.removeItem("mortalidad_user");
+    window.location.href = "index.html";
+  });
+
+  const grid = document.getElementById("pen-grid");
+  const today = todayISO();
+
+  PENS.forEach((pen) => {
+    const todaysRecords = getRecords().filter((r) => r.penId === pen.id && r.date === today);
+    const done = todaysRecords.length > 0;
+    const totalToday = todaysRecords.reduce((sum, r) => sum + r.count, 0);
+
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "pen-card";
+    card.setAttribute("role", "listitem");
+    card.setAttribute("aria-label", `${pen.name}, ${done ? "reporte registrado" : "reporte pendiente"}`);
+
+    card.innerHTML = `
+      <div class="pen-top">
+        <div>
+          <div class="pen-name">${pen.name}</div>
+          <div class="pen-capacity">${pen.capacity.toLocaleString("es-CO")} aves</div>
+        </div>
+        <span class="status-pill ${done ? "status-done" : "status-pending"}">
+          <span class="dot"></span>${done ? "Registrado" : "Pendiente"}
+        </span>
+      </div>
+      <div class="pen-count">
+        ${done ? `Reportadas hoy: <strong>${totalToday}</strong>` : "Sin novedades registradas hoy"}
+      </div>
+    `;
+
+    card.addEventListener("click", () => {
+      window.location.href = `registro.html?galpon=${pen.id}`;
+    });
+
+    grid.appendChild(card);
+  });
+</script>
+</body>
+</html>

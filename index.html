@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Iniciar sesión · Control de Mortalidad Avícola</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+<main class="login-screen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="mark" aria-hidden="true">CM</div>
+      <div class="brand-text">
+        <p class="eyebrow">Sistema de control</p>
+        <strong>Mortalidad Avícola</strong>
+      </div>
+    </div>
+
+    <h1 style="font-size:1.35rem; margin-bottom:4px;">Iniciar sesión</h1>
+    <p style="margin-bottom:22px;">Ingresa con tu usuario de galponero para registrar la novedad del día.</p>
+
+    <form id="login-form" novalidate>
+      <div class="field">
+        <label for="usuario">Usuario</label>
+        <input type="text" id="usuario" name="usuario" autocomplete="username" placeholder="nombre.apellido" required />
+      </div>
+
+      <div class="field">
+        <label for="clave">Contraseña</label>
+        <input type="password" id="clave" name="clave" autocomplete="current-password" placeholder="••••••••" required />
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">Ingresar</button>
+    </form>
+
+    <div class="login-foot">
+      <button type="button" class="btn-link">¿Olvidaste tu contraseña?</button>
+    </div>
+  </div>
+</main>
+
+<script src="assets/js/app.js"></script>
+<script>
+  document.getElementById("login-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const usuario = document.getElementById("usuario").value.trim();
+    const clave = document.getElementById("clave").value.trim();
+
+    if (!usuario || !clave) return;
+
+    sessionStorage.setItem("mortalidad_user", usuario);
+    window.location.href = "galpones.html";
+  });
+</script>
+</body>
+</html>
