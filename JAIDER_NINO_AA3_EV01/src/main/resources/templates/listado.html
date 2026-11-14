@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Control de mortalidad avicola</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 24px; background: #f4f6f4; }
+        h1 { color: #2e5e2e; }
+        table { border-collapse: collapse; width: 100%; background: #fff; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        th { background: #2e5e2e; color: #fff; }
+        .ok { color: #1b6e1b; } .error { color: #b00020; }
+        .boton { background: #2e5e2e; color: #fff; padding: 6px 12px; border: 0; text-decoration: none; cursor: pointer; }
+        .peligro { background: #b00020; }
+        form.en-linea { display: inline; }
+    </style>
+</head>
+<body>
+    <h1>Control de mortalidad avicola (Spring Boot)</h1>
+
+    <p class="ok" th:if="${mensaje}" th:text="${mensaje}"></p>
+    <p class="error" th:if="${error}" th:text="${error}"></p>
+
+    <form method="get" th:action="@{/}">
+        <label for="galpon">Filtrar por galpon:</label>
+        <select name="galpon" id="galpon">
+            <option value="">Todos</option>
+            <option th:each="n : ${#numbers.sequence(1, 8)}" th:value="${n}" th:text="${n}"
+                    th:selected="${n == galponFiltro}"></option>
+        </select>
+        <button class="boton" type="submit">Filtrar</button>
+        <a class="boton" th:href="@{/nuevo}">+ Nuevo registro</a>
+    </form>
+    <br>
+
+    <table>
+        <tr>
+            <th>ID</th><th>Galpon</th><th>Fecha</th><th>Aves muertas</th>
+            <th>Descartes</th><th>Observaciones</th><th>Acciones</th>
+        </tr>
+        <tr th:if="${#lists.isEmpty(registros)}"><td colspan="7">No hay registros.</td></tr>
+        <tr th:each="r : ${registros}">
+            <td th:text="${r.id}"></td>
+            <td th:text="${r.galpon}"></td>
+            <td th:text="${r.fecha}"></td>
+            <td th:text="${r.avesMuertas}"></td>
+            <td th:text="${r.descartes}"></td>
+            <td th:text="${r.observaciones}"></td>
+            <td>
+                <a class="boton" th:href="@{/editar/{id}(id=${r.id})}">Editar</a>
+                <form class="en-linea" method="post" th:action="@{/eliminar/{id}(id=${r.id})}"
+                      onsubmit="return confirm('Eliminar este registro?');">
+                    <button class="boton peligro" type="submit">Eliminar</button>
+                </form>
+            </td>
+        </tr>
+    </table>
+    <p><strong>Total aves muertas: <span th:text="${#aggregates.sum(registros.![avesMuertas])} ?: 0">0</span></strong></p>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de mortalidad</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 24px; background: #f4f6f4; }
+        h1 { color: #2e5e2e; }
+        label { display: block; margin-top: 12px; font-weight: bold; }
+        input, textarea { padding: 6px; width: 320px; }
+        .boton { background: #2e5e2e; color: #fff; padding: 8px 14px; border: 0; text-decoration: none; cursor: pointer; }
+        .error { color: #b00020; display: block; }
+    </style>
+</head>
+<body>
+    <h1 th:text="${registro.id == null} ? 'Nuevo registro de mortalidad' : 'Editar registro #' + ${registro.id}"></h1>
+
+    <form method="post" th:action="@{/guardar}" th:object="${registro}">
+        <input type="hidden" th:field="*{id}">
+
+        <label for="galpon">Galpon (1-8)</label>
+        <input type="number" id="galpon" th:field="*{galpon}">
+        <span class="error" th:if="${#fields.hasErrors('galpon')}" th:errors="*{galpon}"></span>
+
+        <label for="fecha">Fecha</label>
+        <input type="date" id="fecha" th:field="*{fecha}">
+        <span class="error" th:if="${#fields.hasErrors('fecha')}" th:errors="*{fecha}"></span>
+
+        <label for="avesMuertas">Aves muertas</label>
+        <input type="number" id="avesMuertas" th:field="*{avesMuertas}">
+        <span class="error" th:if="${#fields.hasErrors('avesMuertas')}" th:errors="*{avesMuertas}"></span>
+
+        <label for="descartes">Descartes</label>
+        <input type="number" id="descartes" th:field="*{descartes}">
+        <span class="error" th:if="${#fields.hasErrors('descartes')}" th:errors="*{descartes}"></span>
+
+        <label for="observaciones">Observaciones</label>
+        <textarea id="observaciones" rows="3" th:field="*{observaciones}"></textarea>
+        <span class="error" th:if="${#fields.hasErrors('observaciones')}" th:errors="*{observaciones}"></span>
+
+        <br><br>
+        <button class="boton" type="submit">Guardar</button>
+        <a class="boton" th:href="@{/}">Cancelar</a>
+    </form>
+</body>
+</html>
